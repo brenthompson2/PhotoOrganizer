@@ -11,9 +11,23 @@
 # Based on the date picture taken property the pictures will be organized into c:\RecentlyUploadedPhotos\YYYY\YYYY-MM
 # ============================================================================================== 
 
-[reflection.assembly]::loadfile( "C:\Windows\Microsoft.NET\Framework\v2.0.50727\System.Drawing.dll") 
+# Add Dependencies
+[reflection.assembly]::loadfile( "C:\Windows\Microsoft.NET\Framework\v2.0.50727\System.Drawing.dll")
+[System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms")|Out-Null
 
-$Files = Get-ChildItem -recurse -filter *.jpg
+# Get Folder
+$path = Split-Path -parent $PSCommandPath
+$folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
+$folderBrowser.SelectedPath = $path;
+$folderBrowser.Description = "Select a folder"
+$folderBrowser.rootfolder = "MyComputer"
+if($folderBrowser.ShowDialog() -eq "OK")
+{
+    $folder += $folderBrowser.SelectedPath
+}
+Write-Host $folder
+
+$Files = Get-ChildItem -path $folder -recurse -filter *.jpg
 foreach ($file in $Files) 
 {
   # Get the image as a bitmap
@@ -42,5 +56,4 @@ foreach ($file in $Files)
     New-Item $TargetPath -Type Directory
     xcopy /Y/Q $file.FullName $TargetPath
    }
-} 
-
+}
