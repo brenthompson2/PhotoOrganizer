@@ -25,7 +25,11 @@ if($folderBrowser.ShowDialog() -eq "OK")
 {
   $sourceFolderPath += $folderBrowser.SelectedPath
 }
-Write-Host $sourceFolderPath
+else {
+  Write-Host "Failed to select source folder. Returning..." 
+  return
+}
+Write-Host "Source Folder: " + $sourceFolderPath
 
 # Copy each photo into the sorted directory structure
 $Files = Get-ChildItem -path $sourceFolderPath -recurse -filter *.jpg
