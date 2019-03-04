@@ -50,15 +50,18 @@ foreach ($file in $Files)
   # Create the sorted path based off the photo date
   $DateTaken = $year + "-" + $month
   $TargetPath = $sourceFolderPath + "\Sorted\" + $year + "\" + $DateTaken
+  $newFilename = $DateTaken + "-" + $day + "_" + $file.Name
+  $TargetPathWithRename = $TargetPath + "\" + $newFilename
+  Write-Host "Destination Folder: " + $TargetPathWithRename
   
   # Copy the file to the new folder
-  If (Test-Path $TargetPath)
+  if (Test-Path $TargetPath)
   {
-    xcopy /Y/Q $file.FullName $TargetPath
+    copy-item $file.FullName $TargetPathWithRename
   }
-  Else
+  else
   {
     New-Item $TargetPath -Type Directory
-    xcopy /Y/Q $file.FullName $TargetPath
+    copy-item $file.FullName $TargetPathWithRename
   }
 }
