@@ -8,33 +8,34 @@
 # DATE  : 12/2/2007
 # 
 # COMMENT: Helps you organise your digital photos into subdirectories based on the picture's Exif meta data 
-# Based on the date picture taken property the pictures will be organized into c:\RecentlyUploadedPhotos\YYYY\YYYY-MM
+# Based on the date picture taken property the pictures will be organized into <SourceFolderPath>\Sorted\YYYY\YYYY-MM
 # ============================================================================================== 
 
 # Add Dependencies
 [reflection.assembly]::loadfile( "C:\Windows\Microsoft.NET\Framework\v2.0.50727\System.Drawing.dll")
 [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms")|Out-Null
 
-# Get Folder
-$path = Split-Path -parent $PSCommandPath
+# Get the source folder
+$PATH = Split-Path -parent $PSCommandPath
 $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
-$folderBrowser.SelectedPath = $path;
-$folderBrowser.Description = "Select a folder"
+$folderBrowser.SelectedPath = $PATH;
+$folderBrowser.Description = "Select Source folder"
 $folderBrowser.rootfolder = "MyComputer"
 if($folderBrowser.ShowDialog() -eq "OK")
 {
-    $folder += $folderBrowser.SelectedPath
+  $sourceFolderPath += $folderBrowser.SelectedPath
 }
-Write-Host $folder
+Write-Host $sourceFolderPath
 
-$Files = Get-ChildItem -path $folder -recurse -filter *.jpg
+# Copy each photo into the sorted directory structure
+$Files = Get-ChildItem -path $sourceFolderPath -recurse -filter *.jpg
 foreach ($file in $Files) 
 {
-  # Get the image as a bitmap
-  $imageAsBitmap = New-Object -TypeName system.drawing.bitmap -ArgumentList $file.fullname 
+  # Get the photo as a bitmap
+  $photoAsBitmap = New-Object -TypeName system.drawing.bitmap -ArgumentList $file.fullname 
 
-  # Parse the date from the bitmap
-  $date = $imageAsBitmap.GetPropertyItem(36867).value[0..9]  
+  # Parse the photo date from the bitmap
+  $date = $photoAsBitmap.GetPropertyItem(36867).value[0..9]  
   $yearArray = [Char]$date[0],[Char]$date[1],[Char]$date[2],[Char]$date[3]
   $year = [String]::Join("",$yearArray)
   $monthArray = [Char]$date[5],[Char]$date[6]
@@ -42,18 +43,18 @@ foreach ($file in $Files)
   $dayArray = [Char]$date[8],[Char]$date[9]
   $day = [String]::Join("",$dayArray)
 
-  # Get the folder name from the date
-  $DateTaken = $year + "-" + $month + "-" + $day
-  $TargetPath = "c:\RecentlyUploadedPhotos\" + $year + "\" + $DateTaken
+  # Create the sorted path based off the photo date
+  $DateTaken = $year + "-" + $month
+  $TargetPath = $sourceFolderPath + "\Sorted\" + $year + "\" + $DateTaken
   
-  # Copy the file to new folder
+  # Copy the file to the new folder
   If (Test-Path $TargetPath)
   {
     xcopy /Y/Q $file.FullName $TargetPath
   }
   Else
-   {
+  {
     New-Item $TargetPath -Type Directory
     xcopy /Y/Q $file.FullName $TargetPath
-   }
+  }
 }
