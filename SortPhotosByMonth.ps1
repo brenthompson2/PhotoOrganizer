@@ -2,7 +2,7 @@
 # NAME: PhotosByMonth.ps1
 # 
 # UPDATED: Brendan Thompson
-# DATE: 03 March 2019
+# DATE: 31 March 2019
 #
 # AUTHOR:  Kim Oppalfens, 
 # DATE  : 12/2/2007
@@ -44,19 +44,35 @@ foreach ($file in $Files)
   $photoAsBitmap = New-Object -TypeName system.drawing.bitmap -ArgumentList $file.fullname 
 
   # Parse the photo date from the bitmap
-  $date = $photoAsBitmap.GetPropertyItem(36867).value[0..9]  
-  $yearArray = [Char]$date[0],[Char]$date[1],[Char]$date[2],[Char]$date[3]
-  $year = [String]::Join("",$yearArray)
-  $monthArray = [Char]$date[5],[Char]$date[6]
-  $month = [String]::Join("",$monthArray)
-  $dayArray = [Char]$date[8],[Char]$date[9]
-  $day = [String]::Join("",$dayArray)
+  $foundDate = $FALSE
+  try
+  {
+    $date = $photoAsBitmap.GetPropertyItem(36867).value[0..9]  
+    $yearArray = [Char]$date[0],[Char]$date[1],[Char]$date[2],[Char]$date[3]
+    $year = [String]::Join("",$yearArray)
+    $monthArray = [Char]$date[5],[Char]$date[6]
+    $month = [String]::Join("",$monthArray)
+    $dayArray = [Char]$date[8],[Char]$date[9]
+    $day = [String]::Join("",$dayArray)
+    $foundDate = $TRUE
+  }
+  catch [ArgumentException]
+  {
+    Write-Warning "Unable to get meta data for file $file.Name"
+  }
 
-  # Create the sorted path based off the photo date
-  $DateTaken = $year + "-" + $month
-  $TargetPath = $sourceFolderPath + "\Sorted\" + $year + "\" + $DateTaken
-  $newFilename = $DateTaken + "-" + $day + "_" + $file.Name
-  $TargetPathWithRename = $TargetPath + "\" + $newFilename
+  if ($foundDate)
+  {
+    # Create the sorted path based off the photo date
+    $DateTaken = $year + "-" + $month
+    $TargetPath = $sourceFolderPath + "\Sorted\" + $year + "\" + $DateTaken
+    $newFilename = $DateTaken + "-" + $day + "_" + $file.Name
+    $TargetPathWithRename = $TargetPath + "\" + $newFilename
+  }
+  else
+  {
+    $TargetPath = $sourceFolderPath + "\Unsorted\"
+    $TargetPathWithRename = $TargetPath + $file.Name
   }
   
   # Copy the file to the new folder
