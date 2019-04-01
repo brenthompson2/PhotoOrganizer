@@ -36,6 +36,12 @@ else
 }
 Write-Verbose "Source Folder: $sourceFolderPath"
 
+# Setup Statistics
+$total = 0
+$sorted = 0
+$unsorted = 0
+$other = 0
+
 # Copy each photo into the sorted directory structure
 $Files = Get-ChildItem -path $sourceFolderPath -recurse
 foreach ($file in $Files) 
@@ -71,11 +77,13 @@ foreach ($file in $Files)
       $TargetPath = $sourceFolderPath + "\Sorted\" + $year + "\" + $DateTaken
       $newFilename = $DateTaken + "-" + $day + "_" + $file.Name
       $TargetPathWithRename = $TargetPath + "\" + $newFilename
+      $sorted += 1
     }
     else
     {
       $TargetPath = $sourceFolderPath + "\Unsorted\"
       $TargetPathWithRename = $TargetPath + $file.Name
+      $unsorted += 1
     }
   }
   else
@@ -83,6 +91,7 @@ foreach ($file in $Files)
     # Handle all other file types 
     $TargetPath = $sourceFolderPath + "\Other\"
     $TargetPathWithRename = $TargetPath + $file.Name
+    $other += 1
   }
   
   # Copy the file to the new folder
@@ -96,4 +105,9 @@ foreach ($file in $Files)
     New-Item $TargetPath -Type Directory
     copy-item $file.FullName $TargetPathWithRename
   }
+
+  $total += 1
 }
+
+# Log Statistics
+Write-Host "Total $total `tSorted $sorted `tUnsorted $unsorted `tOther $other"
