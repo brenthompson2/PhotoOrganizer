@@ -1,4 +1,4 @@
-﻿# ============================================================================================== 
+# ============================================================================================== 
 # NAME: PhotosByMonth.ps1
 # 
 # UPDATED: Brendan Thompson
@@ -7,9 +7,13 @@
 # AUTHOR:  Kim Oppalfens, 
 # DATE  : 12/2/2007
 # 
-# COMMENT: Helps you organise your digital photos into subdirectories based on the picture's Exif meta data 
+# COMMENT: Helps you organize your digital photos into subdirectories based on the picture's Exif meta data 
 # Based on the date picture taken property the pictures will be organized into <SourceFolderPath>\Sorted\YYYY\YYYY-MM
 # ============================================================================================== 
+
+# Listen for arguments
+[CmdletBinding()]
+param ( )
 
 # Add Dependencies
 [reflection.assembly]::loadfile( "C:\Windows\Microsoft.NET\Framework\v2.0.50727\System.Drawing.dll")
@@ -25,11 +29,12 @@ if($folderBrowser.ShowDialog() -eq "OK")
 {
   $sourceFolderPath += $folderBrowser.SelectedPath
 }
-else {
+else
+{
   Write-Host "Failed to select source folder. Returning..." 
   return
 }
-Write-Host "Source Folder: " + $sourceFolderPath
+Write-Verbose "Source Folder: $sourceFolderPath"
 
 # Copy each photo into the sorted directory structure
 $Files = Get-ChildItem -path $sourceFolderPath -recurse -filter *.jpg
@@ -52,9 +57,10 @@ foreach ($file in $Files)
   $TargetPath = $sourceFolderPath + "\Sorted\" + $year + "\" + $DateTaken
   $newFilename = $DateTaken + "-" + $day + "_" + $file.Name
   $TargetPathWithRename = $TargetPath + "\" + $newFilename
-  Write-Host "Destination Folder: " + $TargetPathWithRename
+  }
   
   # Copy the file to the new folder
+  Write-Verbose "Destination Folder: $TargetPathWithRename"
   if (Test-Path $TargetPath)
   {
     copy-item $file.FullName $TargetPathWithRename
